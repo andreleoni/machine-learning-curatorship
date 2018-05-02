@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    volumes:
+      - /private/etc/website/pg/data:/var/lib/postgresql/data
+
+  webservice:
+    build:
+      context: ./webservice
+    image: webservice
+    container_name: webservice
+    command: flask run -h 0.0.0.0
+    tty: true
+    volumes:
+      - .:/website
+    ports:
+      - "5000:5000"
+    links:
+      - trainer
+    depends_on:
+      - postgres
+    external_links:
+      - postgres
+
+  trainer:
+    build:
+      context: ./trainer
+    image: trainer
+    container_name: trainer
+    command: /bin/bash
+    tty: true
+    volumes:
+      - ../trainer/.:/trainer
+    depends_on:
+      - postgres
+    external_links:
+      - postgres
